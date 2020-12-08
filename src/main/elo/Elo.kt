@@ -1,4 +1,4 @@
-package elo
+package main.elo
 
 import kotlin.math.absoluteValue
 import kotlin.math.pow

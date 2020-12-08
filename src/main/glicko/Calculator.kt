@@ -1,24 +1,25 @@
-package glicko
+package main.glicko
 
 import kotlin.math.*
 
-class Calculator {
+class Calculator (initVolatility: Double?, tau: Double?) {
     private var tau = 0.0
     private var defaultVolatility = 0.0
+    private val constant = Constants
 
-    fun RatingCalculator() {
-        tau = DEFAULT_TAU
-        defaultVolatility = DEFAULT_VOLATILITY
-    }
+    init {
 
-    /**
-     *
-     * @param initVolatility  Initial volatility for new ratings
-     * @param tau             How volatility changes over time
-     */
-    fun RatingCalculator( initVolatility: Double, tau: Double) {
-        defaultVolatility = initVolatility
-        this.tau = tau
+        if (initVolatility == null || tau == null) {
+
+            defaultVolatility = constant.DEFAULT_VOLATILITY
+            this.tau = constant.DEFAULT_TAU
+
+        } else {
+
+            defaultVolatility = initVolatility
+            this.tau = tau
+
+        }
     }
 
     fun updateRatings(results: PeriodResults) {
@@ -26,8 +27,6 @@ class Calculator {
             if (results.getResults(player).isNotEmpty()) {
                 calculateNewRating(player, results.getResults(player))
             } else {
-                // if a player does not compete during the rating period, then only Step 6 applies.
-                // the player's rating and volatility parameters remain the same but deviation increases
                 player.workingRating = player.rating
                 player.workingRatingDeviation = calculateNewRD(player.getGlicko2RatingDeviation(), player.volatility)
                 player.workingVolatility = player.volatility
@@ -35,9 +34,9 @@ class Calculator {
         }
 
         // now iterate through the participants and confirm their new ratings
-//        for (player in results.getParticipants()) {
-//            player.finaliseRating()
-//        }
+        for (player in results.getParticipants()) {
+            player.finaliseRating()
+        }
 
         // lastly, clear the result set down in anticipation of the next rating period
         results.clear()
@@ -69,7 +68,7 @@ class Calculator {
         var fB = subFunctionF(ratingB, delta, phi, v, a, tau)
 
         // step 5.4
-        while (abs(ratingB - ratingA) > CONVERGENCE_TOLERANCE) {
+        while (abs(ratingB - ratingA) > constant.getDefaultConvergenceTolerance()) {
             val ratingC = ratingA + (ratingA - ratingB) * fA / (fB - fA)
             val fC = subFunctionF(ratingC, delta, phi, v, a, tau)
             if (fC * fB < 0) {
@@ -145,48 +144,5 @@ class Calculator {
 
     private fun calculateNewRD(phi: Double, sigma: Double): Double {
         return sqrt(phi.pow(2.0) + sigma.pow(2.0))
-    }
-
-    companion object {
-        private const val DEFAULT_RATING = 1500.0
-        private const val DEFAULT_DEVIATION = 350.0
-        private const val DEFAULT_VOLATILITY = 0.06
-        private const val DEFAULT_TAU = 0.75
-        private const val MULTIPLIER = 173.7178
-        private const val CONVERGENCE_TOLERANCE = 0.000001
-
-        fun convertRatingToOriginalGlickoScale(rating: Double): Double {
-            return rating * MULTIPLIER + DEFAULT_RATING
-        }
-
-
-        fun convertRatingToGlicko2Scale(rating: Double): Double {
-            return (rating - DEFAULT_RATING) / MULTIPLIER
-        }
-
-
-        fun convertRatingDeviationToOriginalGlickoScale(ratingDeviation: Double): Double {
-            return ratingDeviation * MULTIPLIER
-        }
-
-
-        fun convertRatingDeviationToGlicko2Scale(ratingDeviation: Double): Double {
-            return ratingDeviation / MULTIPLIER
-        }
-        fun getDefaultRating(): Double {
-            return DEFAULT_RATING
-        }
-
-
-        fun getDefaultVolatility(): Double {
-            return DEFAULT_VOLATILITY
-        }
-
-
-        fun getDefaultRatingDeviation(): Double {
-            return DEFAULT_DEVIATION
-        }
-
-
     }
 }

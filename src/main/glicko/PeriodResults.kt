@@ -1,32 +1,22 @@
-package glicko
+package main.glicko
 
-class PeriodResults {
+class PeriodResults (participants: HashSet<Rating>?){
     private var results = mutableListOf<Result>()
     private var participants = hashSetOf<Rating>()
 
-    /**
-     * Constructor that allows you to initialise the list of participants.
-     *
-     * @param participants (Set of Rating objects)
-     */
-    fun RatingPeriodResults(participants: HashSet<Rating>) {
-        this.participants = participants
+    init {
+        if (participants.isNullOrEmpty()) this.participants
+            else this.participants = participants
     }
 
     /**
      * Add a result to the set.
-     *
-     * @param winner
-     * @param loser
      */
     fun addResult(winner: Rating?, loser: Rating?) = results.add(Result(winner!!, loser!!, false))
     fun addDraw(player1: Rating?, player2: Rating?) = results.add(Result(player1!!, player2!!, true))
 
     /**
      * Get a list of the results for a given player.
-     *
-     * @param player
-     * @return List of results
      */
     fun getResults(player: Rating?): List<Result> {
         val filteredResults: MutableList<Result> = ArrayList()
@@ -40,8 +30,6 @@ class PeriodResults {
 
     /**
      * Get all the participants whose results are being tracked.
-     *
-     * @return set of all participants covered by the resultset.
      */
     fun getParticipants(): Set<Rating> {
         // Run through the results and make sure all players have been pushed into the participants set.
@@ -55,8 +43,6 @@ class PeriodResults {
     /**
      * Add a participant to the rating period, e.g. so that their rating will
      * still be calculated even if they don't actually compete.
-     *
-     * @param rating
      */
     fun addParticipants(rating: Rating?) {
         participants.add(rating!!)

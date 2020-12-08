@@ -1,11 +1,13 @@
-package glicko
+package main.glicko
 
-class Result (player1: Rating, player2: Rating, private var isDraw: Boolean) {
+class Result(player1: Rating, player2: Rating, isDraw: Boolean) {
+
     private var winner: Rating = player1
     private var loser: Rating = player2
+    private var isGameDraw: Boolean = isDraw
 
     init {
-        require(!(!isDraw || !validPlayers(player1, player2)))
+        if (!validPlayers(winner, loser)) throw java.lang.IllegalArgumentException()
     }
 
     private fun validPlayers(player1: Rating, player2: Rating): Boolean = player1 != player2
@@ -24,7 +26,7 @@ class Result (player1: Rating, player2: Rating, private var isDraw: Boolean) {
      */
     @Throws(IllegalArgumentException::class)
     fun getScore(player: Rating): Double {
-        return if (isDraw) {
+        return if (isGameDraw) {
             POINTS_FOR_DRAW
         } else {
             when {

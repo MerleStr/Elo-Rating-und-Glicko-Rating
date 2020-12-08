@@ -1,1 +1,1 @@
-# Elo-Rating-und-Glicko-Rating
+# main.elo-Rating-und-Glicko-Rating
