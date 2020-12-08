@@ -1,6 +1,7 @@
 package elo
 
 import kotlin.math.absoluteValue
+import kotlin.math.pow
 import kotlin.math.round
 
 
@@ -10,24 +11,34 @@ class Elo(ratingA_old: Float, ratingB_old: Float){
     var ratingB = ratingB_old
 
     private fun probability(ratingA_prob : Float, ratingB_prob: Float): Float {
-        return 1.0f * 1.0f / (1 + 1.0f * Math.pow(10.toDouble(), (1.0f * (ratingA_prob - ratingB_prob) / 400).toDouble()).toFloat())
+        return 1.0f * 1.0f / (1 + 1.0f * 10.toDouble().pow((1.0f * (ratingA_prob - ratingB_prob) / 400).toDouble()).toFloat())
     }
 
-    fun eloRating(
-        K: Int, d: Boolean
-    ) {
+    fun eloRating( K: Int, d: Int ) {
+
         printRatings()
+
         // calculate Probability
         val probabilityB = probability(ratingA, ratingB)
         val probabilityA = probability(ratingB, ratingA)
 
         // Updating the Elo Ratings
-        if (d) {
-            ratingA += K * (1 - probabilityA)
-            ratingB += K * (0 - probabilityB)
-        } else {
-            ratingA += K * (0 - probabilityA)
-            ratingB += K * (1 - probabilityB)
+        when(d){
+            // Win for A
+            1 -> {
+                ratingA += K * (1 - probabilityA)
+                ratingB += K * (0 - probabilityB)
+            }
+            // Lose for A
+            2 -> {
+                ratingA += K * (0 - probabilityA)
+                ratingB += K * (1 - probabilityB)
+            }
+            // Draw
+            else -> {
+                ratingA += (K * (0.5 - probabilityA)).toFloat()
+                ratingB += (K * (0.5 - probabilityB)).toFloat()
+            }
         }
 
         ratingA = ratingA.round(2)
@@ -44,7 +55,6 @@ class Elo(ratingA_old: Float, ratingB_old: Float){
                 "\nRating Difference = ${((rRatingA - rRatingB).absoluteValue).round(2)}")
         print("\n---------------------------------------------")
     }
-
 
     private fun printRatings() {
         print("\n---------------------------------------------")
