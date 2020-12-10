@@ -1,4 +1,4 @@
-package main.glicko
+package glicko
 
 class Result(player1: Rating, player2: Rating, isDraw: Boolean) {
 
@@ -7,7 +7,7 @@ class Result(player1: Rating, player2: Rating, isDraw: Boolean) {
     private var isGameDraw: Boolean = isDraw
 
     init {
-        if (!validPlayers(winner, loser)) throw java.lang.IllegalArgumentException()
+        require(validPlayers(winner, loser))
     }
 
     private fun validPlayers(player1: Rating, player2: Rating): Boolean = player1 != player2
@@ -17,13 +17,7 @@ class Result(player1: Rating, player2: Rating, isDraw: Boolean) {
     fun getWinner() : Rating = winner
     fun getLoser() : Rating = loser
 
-    /**
-     * Returns the "score" for a match.
-     *
-     * @param player
-     * @return 1 for a win, 0.5 for a draw and 0 for a loss
-     * @throws IllegalArgumentException
-     */
+
     @Throws(IllegalArgumentException::class)
     fun getScore(player: Rating): Double {
         return if (isGameDraw) {
@@ -32,22 +26,16 @@ class Result(player1: Rating, player2: Rating, isDraw: Boolean) {
             when {
                 winner == player -> POINTS_FOR_WIN
                 loser == player -> POINTS_FOR_LOSS
-                else -> throw IllegalArgumentException("Player " + player.uid + " did not participate in match")
+                else -> throw IllegalArgumentException("Player " + player.getUId() + " did not participate in match")
             }
         }
     }
 
-    /**
-     * Given a particular player, returns the opponent.
-     *
-     * @param player
-     * @return opponent
-     */
     fun getOpponent(player: Rating): Rating {
         return when {
             winner == player -> loser
             loser == player -> winner
-            else -> throw IllegalArgumentException("Player " + player.uid + " did not participate in match")
+            else -> throw IllegalArgumentException("Player " + player.getUId() + " did not participate in match")
         }
     }
 

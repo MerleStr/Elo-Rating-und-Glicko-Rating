@@ -1,4 +1,4 @@
-package main.glicko
+package glicko
 
 class PeriodResults (participants: HashSet<Rating>?){
     private var results = mutableListOf<Result>()

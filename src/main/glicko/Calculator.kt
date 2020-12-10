@@ -1,18 +1,17 @@
-package main.glicko
+package glicko
 
 import kotlin.math.*
 
-class Calculator (initVolatility: Double?, tau: Double?) {
+class Calculator(initVolatility: Double?, tau: Double?) {
     private var tau = 0.0
     private var defaultVolatility = 0.0
-    private val constant = Constants
 
     init {
 
         if (initVolatility == null || tau == null) {
 
-            defaultVolatility = constant.DEFAULT_VOLATILITY
-            this.tau = constant.DEFAULT_TAU
+            defaultVolatility = Constants.DEFAULT_VOLATILITY
+            this.tau = Constants.DEFAULT_TAU
 
         } else {
 
@@ -27,15 +26,16 @@ class Calculator (initVolatility: Double?, tau: Double?) {
             if (results.getResults(player).isNotEmpty()) {
                 calculateNewRating(player, results.getResults(player))
             } else {
-                player.workingRating = player.rating
-                player.workingRatingDeviation = calculateNewRD(player.getGlicko2RatingDeviation(), player.volatility)
-                player.workingVolatility = player.volatility
+                player.setWorkingRating(player.getRating())
+                player.setWorkingRatingDeviation(calculateNewRD(player.getGlicko2RatingDeviation(), player.getVolatility()))
+                player.setWorkingVolatility(player.getVolatility())
             }
         }
 
         // now iterate through the participants and confirm their new ratings
         for (player in results.getParticipants()) {
             player.finaliseRating()
+            println("\n" + player.toString())
         }
 
         // lastly, clear the result set down in anticipation of the next rating period
@@ -44,10 +44,11 @@ class Calculator (initVolatility: Double?, tau: Double?) {
 
     private fun calculateNewRating(player: Rating, results: List<Result>) {
         val phi: Double = player.getGlicko2RatingDeviation()
-        val sigma = player.volatility
+        val sigma = player.getVolatility()
         val a = ln(sigma.pow(2.0))
         val delta = delta(player, results)
         val v = subFunctionV(player, results)
+
 
         // step 5.2 - set the initial values of the iterative algorithm to come in step 5.4
         var ratingA = a
@@ -68,7 +69,7 @@ class Calculator (initVolatility: Double?, tau: Double?) {
         var fB = subFunctionF(ratingB, delta, phi, v, a, tau)
 
         // step 5.4
-        while (abs(ratingB - ratingA) > constant.getDefaultConvergenceTolerance()) {
+        while (abs(ratingB - ratingA) > Constants.getDefaultConvergenceTolerance()) {
             val ratingC = ratingA + (ratingA - ratingB) * fA / (fB - fA)
             val fC = subFunctionF(ratingC, delta, phi, v, a, tau)
             if (fC * fB < 0) {
@@ -80,8 +81,12 @@ class Calculator (initVolatility: Double?, tau: Double?) {
             ratingB = ratingC
             fB = fC
         }
+
         val newSigma = exp(ratingA / 2.0)
-        player.workingVolatility = newSigma
+
+        val tmp = player.setWorkingVolatility(newSigma)
+
+        println("\n Set Volibear: $tmp Volibear: ${player.getVolatility()} Sigma: $newSigma")
 
         // Step 6
         val phiStar = calculateNewRD(phi, newSigma)
@@ -91,8 +96,8 @@ class Calculator (initVolatility: Double?, tau: Double?) {
 
         // note that the newly calculated rating values are stored in a "working" area in the Rating object
         // this avoids us attempting to calculate subsequent participants' ratings against a moving target
-        player.workingRating = (player.getGlicko2Rating() + newPhi.pow(2.0) * outcomeBasedRating(player, results))
-        player.workingRatingDeviation = newPhi
+        player.setWorkingRating((player.getGlicko2Rating() + newPhi.pow(2.0) * outcomeBasedRating(player, results)))
+        player.setWorkingRatingDeviation(newPhi)
         player.incrementNumberOfResults(results.size)
     }
 
@@ -131,7 +136,7 @@ class Calculator (initVolatility: Double?, tau: Double?) {
     private fun outcomeBasedRating(player: Rating, results: List<Result>): Double {
         var outcomeBasedRating = 0.0
 
-        for (result in results){
+        for (result in results) {
             outcomeBasedRating = (outcomeBasedRating
                     + (subFunctionG(result.getOpponent(player).getGlicko2RatingDeviation())
                     * (result.getScore(player) - subFunctionE(

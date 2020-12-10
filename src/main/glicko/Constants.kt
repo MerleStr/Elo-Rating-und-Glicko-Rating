@@ -1,4 +1,4 @@
-package main.glicko
+package glicko
 
 object Constants {
 
@@ -28,19 +28,20 @@ object Constants {
     fun convertRatingDeviationToGlicko2Scale(ratingDeviation: Double): Double {
         return ratingDeviation / MULTIPLIER
     }
-    fun getDefaultRating(): Double {
-        return DEFAULT_RATING
-    }
 
-
-    fun getDefaultVolatility(): Double {
-        return DEFAULT_VOLATILITY
-    }
-
-
-    fun getDefaultRatingDeviation(): Double {
-        return DEFAULT_DEVIATION
-    }
+//    fun getDefaultRating(): Double {
+//        return DEFAULT_RATING
+//    }
+//
+//
+//    fun getDefaultVolatility(): Double {
+//        return DEFAULT_VOLATILITY
+//    }
+//
+//
+//    fun getDefaultRatingDeviation(): Double {
+//        return DEFAULT_DEVIATION
+//    }
 
     fun getDefaultConvergenceTolerance(): Double {
         return CONVERGENCE_TOLERANCE

@@ -1,4 +1,4 @@
-package main.glicko
+package glicko
 
 class Rating(userId: String, initRating : Double?, initRatingDeviation : Double?, initVolatility : Double?) {
 
@@ -11,14 +11,13 @@ class Rating(userId: String, initRating : Double?, initRatingDeviation : Double?
     private var workingRating = 0.0
     private var workingRatingDeviation = 0.0
     private var workingVolatility = 0.0
-    private val constant = Constants
 
     init {
         uid = userId
         if (initRating == null || initRatingDeviation == null || initVolatility == null){
-            rating = constant.DEFAULT_RATING
-            ratingDeviation = constant.DEFAULT_DEVIATION
-            volatility = constant.DEFAULT_VOLATILITY
+            rating = Constants.DEFAULT_RATING
+            ratingDeviation = Constants.DEFAULT_DEVIATION
+            volatility = Constants.DEFAULT_VOLATILITY
         } else {
             rating = initRating
             ratingDeviation = initRatingDeviation
@@ -26,49 +25,36 @@ class Rating(userId: String, initRating : Double?, initRatingDeviation : Double?
         }
     }
 
-    override fun toString(): String = "$uid / $rating / $ratingDeviation / $volatility / $numberOfResults"
+    fun getGlicko2Rating(): Double = Constants.convertRatingToGlicko2Scale(rating)
 
-    fun incrementNumberOfResults(increment: Int) {
-        numberOfResults += + increment
-    }
+    fun getGlicko2RatingDeviation(): Double = Constants.convertRatingDeviationToGlicko2Scale(ratingDeviation)
 
-    fun getGlicko2Rating(): Double {
-        println("\nRating in rating: $rating")
-        val tmp = constant.convertRatingToGlicko2Scale(rating)
-        println("\nRating To Glicko 2 Scale: $tmp\n")
+    fun getUId() = uid
 
-        return tmp
-    }
+    fun getRating() = rating
 
-    fun getGlicko2RatingDeviation(): Double = (constant.convertRatingDeviationToGlicko2Scale(ratingDeviation)).round(4)
+    fun getRatingDeviation() = ratingDeviation
+
+    fun getVolatility() = volatility
 
 // ----------------------------------------------------------------------
-//    fun setGlicko2Rating(rating: Double) {
-//        this.rating = Calcutator.convertRatingToOriginalGlickoScale(rating)
-//    }
 
     fun setGlicko2Rating(rating: Double) {
-        this.rating = constant.convertRatingToOriginalGlickoScale(rating)
+        this.rating = Constants.convertRatingToOriginalGlickoScale(rating)
     }
 
     fun setGlicko2RatingDeviation(ratingDeviation: Double) {
-        this.ratingDeviation = constant.convertRatingDeviationToOriginalGlickoScale(ratingDeviation)
+        this.ratingDeviation = Constants.convertRatingDeviationToOriginalGlickoScale(ratingDeviation)
     }
 
-    fun setRating(workingRating: Double) {
-        this.rating = rating
+    fun setVolatility(workingVolatility: Double) : Double{
+        this.volatility = workingVolatility
+        return this.volatility
     }
 
-    fun setVolatility(workingVolatility: Double) {
-        this.volatility = volatility
-    }
-
-    fun setRatingDeviation(ratingDeviation: Double) {
-        this.ratingDeviation = ratingDeviation
-    }
-
-    fun setWorkingVolatility(workingVolatility: Double) {
+    fun setWorkingVolatility(workingVolatility: Double) : Double {
         this.workingVolatility = workingVolatility
+        return workingVolatility
     }
 
     fun setWorkingRating(workingRating: Double) {
@@ -78,7 +64,10 @@ class Rating(userId: String, initRating : Double?, initRatingDeviation : Double?
     fun setWorkingRatingDeviation(workingRatingDeviation: Double) {
         this.workingRatingDeviation = workingRatingDeviation
     }
-//
+
+    // ----------------------------------------------------------------------
+
+
     fun finaliseRating() {
         setGlicko2Rating(workingRating)
         setGlicko2RatingDeviation(workingRatingDeviation)
@@ -88,11 +77,18 @@ class Rating(userId: String, initRating : Double?, initRatingDeviation : Double?
         setWorkingVolatility(0.0)
     }
 
+
     fun Double.round(decimals: Int): Double {
         var multiplier = 1.0
         repeat(decimals) { multiplier *= 10 }
-        return (kotlin.math.round(this * multiplier) / multiplier).toDouble()
+        return (kotlin.math.round(this * multiplier) / multiplier)
     }
 
+    override fun toString(): String = "$uid / ${rating.round(2)} / " +
+            "${ratingDeviation.round(2)} / ${volatility.round(7)}/ $numberOfResults"
+
+    fun incrementNumberOfResults(increment: Int) {
+        numberOfResults += + increment
+    }
 }
 
