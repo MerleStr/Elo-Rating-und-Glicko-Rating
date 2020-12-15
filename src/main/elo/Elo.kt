@@ -5,13 +5,13 @@ import kotlin.math.pow
 import kotlin.math.round
 
 
-class Elo(ratingA_old: Float, ratingB_old: Float){
+class Elo(ratingA_old: Double, ratingB_old: Double){
 
     var ratingA = ratingA_old
     var ratingB = ratingB_old
 
-    private fun probability(ratingA_prob : Float, ratingB_prob: Float): Float {
-        return 1.0f * 1.0f / (1 + 1.0f * 10.toDouble().pow((1.0f * (ratingA_prob - ratingB_prob) / 400).toDouble()).toFloat())
+    private fun probability(ratingA : Double, ratingB: Double): Double {
+        return 1.0f / (1 + 1.0f * (10.0).pow((1.0f * (ratingA - ratingB) / 400)))
     }
 
     fun eloRating( K: Int, d: Int ) {
@@ -36,8 +36,8 @@ class Elo(ratingA_old: Float, ratingB_old: Float){
             }
             // Draw
             else -> {
-                ratingA += (K * (0.5 - probabilityA)).toFloat()
-                ratingB += (K * (0.5 - probabilityB)).toFloat()
+                ratingA += (K * (0.5 - probabilityA))
+                ratingB += (K * (0.5 - probabilityB))
             }
         }
 
@@ -48,11 +48,11 @@ class Elo(ratingA_old: Float, ratingB_old: Float){
     }
 
 
-    private fun printRoundRating(rRatingA : Float, rRatingB : Float) {
+    private fun printRoundRating(rRatingA : Double, rRatingB : Double) {
         print("\n---\nUpdated Ratings:\n")
         print("\nRating Person A = $rRatingA " +
                 "\nRating Person B = $rRatingB " +
-                "\nRating Difference = ${((rRatingA - rRatingB).absoluteValue).round(2)}")
+                "\nRating Difference = ${((rRatingA - rRatingB).absoluteValue).toDouble().round(2)}")
         print("\n---------------------------------------------")
     }
 
@@ -64,10 +64,10 @@ class Elo(ratingA_old: Float, ratingB_old: Float){
                 "\nRating Difference = ${(ratingA - ratingB).absoluteValue}")
     }
 
-    private fun Float.round(decimals: Int): Float {
+    private fun Double.round(decimals: Int): Double {
         var multiplier = 1.0
         repeat(decimals) { multiplier *= 10 }
-        return (round(this * multiplier) / multiplier).toFloat()
+        return (round(this * multiplier) / multiplier)
     }
 
 }
