@@ -43,50 +43,59 @@ class Calculator(initVolatility: Double?, tau: Double?) {
     }
 
     private fun calculateNewRating(player: Rating, results: List<Result>) {
+        // Abweichung in die Glicko-2 Skala (14)
         val phi: Double = player.getGlicko2RatingDeviation()
+
+        // Schwankung des Spielers
         val sigma = player.getVolatility()
+
+        // ln(σ^2)
         val a = ln(sigma.pow(2.0))
-        val delta = delta(player, results)
+
+        // (18)
+        val delta = subFunctionV(player, results) * outcomeBasedRating(player, results) //delta(player, results)
         val v = subFunctionV(player, results)
 
 
         // step 5.2 - set the initial values of the iterative algorithm to come in step 5.4
-        var ratingA = a
-        var ratingB = 0.0
+        var A = a
+        var B = 0.0
+        // ∆^2 > Φ^2+υ
         if (delta.pow(2.0) > phi.pow(2.0) + v) {
-            ratingB = ln(delta.pow(2.0) - phi.pow(2.0) - v)
-        } else {
-            var k = 1.0
-            ratingB = a - k * abs(tau)
-            while (subFunctionF(ratingB, delta, phi, v, a, tau) < 0) {
+            // B = ln(∆^2 − Φ^2 − v)
+            B = ln(delta.pow(2.0) - phi.pow(2.0) - v)
+        } else { // ∆^2 <= Φ^2 + v
+            var k = 1.0 // Sei k = 1
+            // B = a - kτ --> initial
+            B = a - k * abs(tau)
+            // gehe wieder zu (ii)
+            while (subFunctionF(B, delta, phi, v, a, tau) < 0) {
                 k++
-                ratingB = a - k * abs(tau)
+                B = a - k * abs(tau)
             }
         }
 
         // step 5.3
-        var fA = subFunctionF(ratingA, delta, phi, v, a, tau)
-        var fB = subFunctionF(ratingB, delta, phi, v, a, tau)
+        var fA = subFunctionF(A, delta, phi, v, a, tau)
+        var fB = subFunctionF(B, delta, phi, v, a, tau)
 
         // step 5.4
-        while (abs(ratingB - ratingA) > Constants.getDefaultConvergenceTolerance()) {
-            val ratingC = ratingA + (ratingA - ratingB) * fA / (fB - fA)
+        while (abs(B - A) > Constants.getDefaultConvergenceTolerance()) {
+            val ratingC = A + (A - B) * fA / (fB - fA)
             val fC = subFunctionF(ratingC, delta, phi, v, a, tau)
             if (fC * fB < 0) {
-                ratingA = ratingB
+                A = B
                 fA = fB
             } else {
                 fA /= 2.0
             }
-            ratingB = ratingC
+            B = ratingC
             fB = fC
         }
 
-        val newSigma = exp(ratingA / 2.0)
+        val newSigma = exp(A / 2.0)
 
-        val tmp = player.setWorkingVolatility(newSigma)
-
-        println("\n Set Volibear: $tmp Volibear: ${player.getVolatility()} Sigma: $newSigma")
+        player.setWorkingVolatility(newSigma)
 
         // Step 6
         val phiStar = calculateNewRD(phi, newSigma)
@@ -129,8 +138,12 @@ class Calculator(initVolatility: Double?, tau: Double?) {
         return v.pow(-1.0)
     }
 
-    private fun delta(player: Rating, results: List<Result>): Double {
-        return subFunctionV(player, results) * outcomeBasedRating(player, results)
+//    private fun delta(player: Rating, results: List<Result>): Double {
+//        return subFunctionV(player, results) * outcomeBasedRating(player, results)
+//    }
+
+    private fun calculateNewRD(phi: Double, sigma: Double): Double {
+        return sqrt(phi.pow(2.0) + sigma.pow(2.0))
     }
 
     private fun outcomeBasedRating(player: Rating, results: List<Result>): Double {
@@ -147,7 +160,5 @@ class Calculator(initVolatility: Double?, tau: Double?) {
         return outcomeBasedRating
     }
 
-    private fun calculateNewRD(phi: Double, sigma: Double): Double {
-        return sqrt(phi.pow(2.0) + sigma.pow(2.0))
-    }
+
 }
