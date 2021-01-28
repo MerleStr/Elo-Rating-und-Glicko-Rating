@@ -8,12 +8,12 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-internal class testGlicko{
+internal class TestGlicko{
 
-    val calculator: Calculator = Calculator(0.06, 0.5)
-    val results: PeriodResults = PeriodResults(null)
-    val ratings = mutableListOf<Rating>()
-    val constants = Constants
+    private val calculator: Calculator = Calculator(0.06, 0.5)
+    private val results: PeriodResults = PeriodResults(null)
+    private val ratings = mutableListOf<Rating>()
+    private val constants = Constants
 
 
     private fun initPlayer() {
@@ -31,7 +31,7 @@ internal class testGlicko{
         ratings.add(player5)
     }
 
-    fun Double.round(decimals: Int): Double {
+    private fun Double.round(decimals: Int): Double {
         var multiplier = 1.0
         repeat(decimals) { multiplier *= 10 }
         return (kotlin.math.round(this * multiplier) / multiplier).toDouble()

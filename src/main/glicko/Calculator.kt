@@ -35,7 +35,7 @@ class Calculator(initVolatility: Double?, tau: Double?) {
         // now iterate through the participants and confirm their new ratings
         for (player in results.getParticipants()) {
             player.finaliseRating()
-            println("\n" + player.toString())
+            //println("\n" + player.toString())
         }
 
         // lastly, clear the result set down in anticipation of the next rating period
@@ -57,7 +57,7 @@ class Calculator(initVolatility: Double?, tau: Double?) {
         val v = subFunctionV(player, results)
 
 
-        // step 5.2 - set the initial values of the iterative algorithm to come in step 5.4
+        // step 5.2
         var A = a
         var B = 0.0
         // ∆^2 > Φ^2+υ
@@ -103,8 +103,6 @@ class Calculator(initVolatility: Double?, tau: Double?) {
         // Step 7
         val newPhi = 1.0 / sqrt(1.0 / phiStar.pow(2.0) + 1.0 / v)
 
-        // note that the newly calculated rating values are stored in a "working" area in the Rating object
-        // this avoids us attempting to calculate subsequent participants' ratings against a moving target
         player.setWorkingRating((player.getGlicko2Rating() + newPhi.pow(2.0) * outcomeBasedRating(player, results)))
         player.setWorkingRatingDeviation(newPhi)
         player.incrementNumberOfResults(results.size)
